@@ -1,0 +1,184 @@
+#Nama : Widia Salsalina Br Singarimbun
+#NIM  :123140035
+#dari kelas RD
+
+import csv
+
+#dictionary untuk menyimpan data mahasiswa
+mahasiswa = {
+    "123140013":{"nama":"putri","nilai":94},
+    "123140025":{"nama":"audy","nilai":96},
+    "123140029":{"nama":"leony","nilai":98},
+    "123140035":{"nama":"widia","nilai":99},
+}
+
+#fungsi untuk menampilakan menu utama
+def tampilkan_menu():
+    #menampilkan menu utama
+    print( "=== SISTEM PENGELOLAAN DATA MAHASISWA ===")
+    print("1.Tambahkan mahasiswa")
+    print("2.Tampilkan semua mahasiswa")
+    print("3.Cari mahasiswa berdasarkan NIM")
+    print("4.Edit data mahasiwa")
+    print("5.Hapus data mahasiswa")
+    print("6.Simpan ke file")
+    print("7.Keluar")
+
+    try:
+        #menerima inputt yang dipilih dari pengguna
+        pilihan = int(input("pilih menu:"))
+    except ValueError:
+        #menangani pengecualian ValueError jika input bukan angka
+        print("input tidak valid!harap masukkan angka.")
+        return None
+    return pilihan
+
+#fungsi untuk menambahkan mahasiswa
+def tambah_mahasiswa():
+    #menerima input NIM,nama dan nilai mahasiswa dari pengguna
+    nim = input("masukkan NIM mahasiswa:")
+    nama = input("masukkan nama mahasiswa:")
+    nilai = input("masukkan nilai mahasiswa:")
+
+    if not nilai.isdigit():
+        #memastikan bahwa nilai adalah angka
+        print("nilai harus berupa angka!")
+        return
+    
+    #menambahkan data mahasiswa ke dictionary
+    mahasiswa[nim] = {"nama" : nama, "nilai":int(nilai)}
+    print("mahasiswa berhasil ditambahkan!")
+    simpan_ke_file() # lagsung menyimpan perubahan ke file
+
+    #fungsi untuk menampilkan semua data
+def tampilakan_semua_mahasiswa():
+    if not mahasiswa: # jika tidak ada data mahasiswa
+        print ("belum ada data mahasiswa yang tersimpan!")
+        return
+        
+    print("====DATA MAHASISWA====")
+        #menampilakan header tabel
+    print("{:<10} | {:<10} | {:<5}".format("NIM","nama","nilai"))
+    print("--------------------------------")
+
+        #mengunakan sorted untuk mengurutkan data nilai mahasiswa dari tertinggi ke terendah
+    mahasiswa_terurut = sorted(mahasiswa.items(),key=lambda x:x[1]["nilai"],reverse=True)
+
+    for nim,data in mahasiswa_terurut:
+
+        #menampilkan data mahasiswa dalam format tabel
+        print("{:<10} | {:<10} | {:<5}".format(nim,data["nama"],data["nilai"]))
+        
+        #fungsi untuk mencari mahasiswa berdasarkan NIM
+def cari_mahasiswa():
+    #menerima input NIM mahsiswa yang ingin dicari
+    nim=input("masukkan NIM mahasiswa yang ingin dicari:")
+    if nim in mahasiswa:
+        #jika mahasiswa ditemukan maka data ditampilkan
+        data =mahasiswa[nim]
+        print(f"\nData Mahasiswa:\nNIM:{nim}\nNama:{data["nama"]}\nNilai:{data["nilai"]}\n")
+    else:
+        #jika mahasiswa tidak ditemukan
+        print("mahasiwa dengan NIM tersebut tidak ditemukan!")
+
+#fungsi untuk mengedit data mahasiswa
+def edit_mahasiswa():
+    #menerima NIM yang ingin diedit dari pengguna
+    nim = input("masukkan NIM mahasiswa yang ingin diedit:")
+    if nim not in mahasiswa:
+        #jika tidak ditemukan mahasiswa
+        print("mahasiswa dengan NIM tersebut tidak ditemkan!")
+        return
+    
+    #menerima input nama dan nilai baru dari pengguna(kosongkan jika tidak ingin mengubah)
+    nama=input("masukkan nama baru(kosongkan jika tidak ingin diubah):")
+    nilai=print("masukkan nilai(kosongkan jika tidak ingin diubah):")
+
+    if nama:
+        #memperbaharui nama mahsiwa
+        mahasiswa[nim]["nama"] = nama
+    if nilai:
+        #memastikan bahwa nilai adalah angka
+        if not nilai.isdigit():
+            print("nilai harus berupa angka!")
+            return
+                
+        #memperbaharui nilai mahasiswa
+        mahasiswa[nim]["nilai"]=int(nilai)
+
+    print("data mahasiswa berhasil diperbaharui!")
+    simpan_ke_file()
+
+
+#fungsi untuk menghapus data mahsiswa
+def hapus_mahasiswa():
+    #menerima input NIM mahasiswa yang ingin dihapus datanya
+    nim = input("Masukkan NIM mahasiswa yang ingin dihapus: ")
+    if nim in mahasiswa:
+               
+        #menghapus data mahsiswa dari dictionary
+        del mahasiswa[nim]
+        print("data mahasiswa berhasil dihapus!")
+        simpan_ke_file()
+
+    else:
+        #jika mahasiswa tidak ditemukan
+        print("mahasiswa dengan NIM tersebut tidak ditemukan!")
+
+        #fungsi utnuk menyimpan data mahasiwa ke dalam file
+def simpan_ke_file():
+    #Menyimpan data mahasiswa dalam format CSV-like (dengan koma sebagai pemisah) ke file teks 'mahasiswa.txt'
+    with open("mahasiswa.txt", mode="w", newline="") as file:  # Mode 'w' untuk menulis ulang
+        writer =csv.writer(file)
+        writer.writerow(["NIM","Nama","Nilai"]) #harus menulis header
+        for nim, data in mahasiswa.items():
+            writer.writerow([nim,data["nama"],data["nilai"]])
+    print("data mahasiswa berhasil disimpan ke dalam file 'mahasiwa.txt'.") 
+
+#fungsi untuk membaca data mahasiwa dari file teks\
+def muat_dari_file():
+    try:
+        # Membaca data mahasiswa dari file teks 'mahasiswa.txt'
+        with open('mahasiswa.txt', mode='r') as file:
+            reader = csv.reader(file)
+            next(reader)  # Melewati header
+            for row in reader:
+                nim, nama, nilai = row
+                mahasiswa[nim] = {"nama": nama, "nilai": int(nilai)}
+        print("Data mahasiswa berhasil dimuat dari file!")
+    except FileNotFoundError:
+        # Menangani pengecualian FileNotFoundError jika file tidak ditemukan
+        print("File 'mahasiswa.txt' tidak ditemukan. Memulai dengan data kosong.")
+
+# Program utama
+def main():
+    # Memuat data mahasiswa dari file saat program dimulai
+    muat_dari_file()
+    while True:
+        # Menampilkan menu utama dan menerima input dari pengguna
+        pilihan = tampilkan_menu()
+        if pilihan is None:
+            continue
+
+        # Menjalankan fungsi sesuai dengan pilihan pengguna
+        if pilihan == 1:
+            tambah_mahasiswa()
+        elif pilihan == 2:
+            tampilakan_semua_mahasiswa()
+        elif pilihan == 3:
+            cari_mahasiswa()
+        elif pilihan == 4:
+            edit_mahasiswa()
+        elif pilihan == 5:
+            hapus_mahasiswa()
+        elif pilihan == 6:
+            simpan_ke_file()
+        elif pilihan == 7:
+            print("Terima kasih telah menggunakan program ini. Sampai jumpa dilain waktu!")
+            break
+        else:
+            print("Pilihan tidak valid! Silakan pilih menu yang tersedia.")
+
+# Memastikan program berjalan saat dieksekusi langsung
+if __name__== "__main__":
+    main()
