@@ -1,0 +1,111 @@
+import random
+
+# Kelas Robot merepresentasikan setiap robot yang akan bertarung dalam permainan
+class Robot:
+    def __init__(self, name, hp, attack_power):
+        self.name = name  # Nama robot
+        self.hp = hp  # Jumlah darah (HP) yang dimiliki robot
+        self.attack_power = attack_power  # Kekuatan serangan robot
+        self.defense_mode = False  # Status apakah robot sedang bertahan atau tidak
+
+    # Metode untuk menyerang robot lawan
+    def attack_enemy(self, enemy):
+        if random.random() < 0.2:  # Ada kemungkinan 20% serangan meleset
+            print(f"------------ {self.name} gagal menyerang ----------------")
+            return
+        
+        # Jika lawan sedang bertahan, damage yang diberikan berkurang 50%
+        damage = self.attack_power // 2 if enemy.defense_mode else self.attack_power
+        enemy.hp = max(0, enemy.hp - damage)  # Pastikan HP lawan tidak negatif
+        print(f"{self.name} menyerang {enemy.name} dan memberikan {damage} damage!")
+        print(f"{enemy.name} sekarang memiliki {enemy.hp} HP")
+
+    # Metode untuk bertahan dari serangan lawan
+    def activate_defense(self):
+        self.defense_mode = True
+        print(f"{self.name} masuk ke mode bertahan, damage yang diterima akan berkurang!")
+
+    # Metode untuk memulihkan sedikit HP
+    def regen_health(self):
+        heal_amount = 30  # Jumlah HP yang dipulihkan
+        self.hp += heal_amount
+        print(f"{self.name} memulihkan {heal_amount} HP! HP saat ini: {self.hp}")
+
+    # Metode untuk mengecek apakah robot sudah kehabisan HP
+    def is_defeated(self):
+        return self.hp <= 0
+
+# Kelas Game mengatur jalannya permainan antara dua robot
+class Game:
+    def __init__(self, robot1, robot2):
+        self.robot1 = robot1  # Robot pertama
+        self.robot2 = robot2  # Robot kedua
+
+    # Metode utama untuk menjalankan permainan
+    def play(self):
+        round_num = 1  # Nomor ronde dimulai dari 1
+        while not self.robot1.is_defeated() and not self.robot2.is_defeated():
+            print(f"\nRound-{round_num} ==========================================================")
+            print(f"{self.robot1.name} [HP: {self.robot1.hp} | ATK: {self.robot1.attack_power}]")
+            print(f"{self.robot2.name} [HP: {self.robot2.hp} | ATK: {self.robot2.attack_power}]")
+            
+            # Robot pertama memilih aksi
+            action1 = self.get_player_action(self.robot1)
+            if action1 == "attack":
+                self.robot1.attack_enemy(self.robot2)
+            elif action1 == "defense":
+                self.robot1.activate_defense()
+            elif action1 == "giveup":
+                print(f"{self.robot1.name} menyerah! {self.robot2.name} menang!")
+                return
+            
+            # Cek apakah robot kedua kalah setelah diserang
+            if self.robot2.is_defeated():
+                print(f"{self.robot2.name} kalah! {self.robot1.name} menang!")
+                break
+            
+            # Robot kedua memilih aksi
+            action2 = self.get_player_action(self.robot2)
+            if action2 == "attack":
+                self.robot2.attack_enemy(self.robot1)
+            elif action2 == "defense":
+                self.robot2.activate_defense()
+            elif action2 == "giveup":
+                print(f"{self.robot2.name} menyerah! {self.robot1.name} menang!")
+                return
+            
+            # Cek apakah robot pertama kalah setelah diserang
+            if self.robot1.is_defeated():
+                print(f"{self.robot1.name} kalah! {self.robot2.name} menang!")
+                break
+            
+            # Reset status pertahanan di akhir ronde agar tidak bertahan terus-menerus
+            self.robot1.defense_mode = False
+            self.robot2.defense_mode = False
+            round_num += 1
+
+    # Metode untuk meminta input dari pemain mengenai aksi yang ingin dilakukan
+    def get_player_action(self, robot):
+        while True:
+            try:
+                choice = int(input(f"\n1. Attack     2. Defense     3. Giveup\n{robot.name}, pilih aksi: "))
+                if choice == 1:
+                    return "attack"
+                elif choice == 2:
+                    return "defense"
+                elif choice == 3:
+                    return "giveup"
+                else:
+                    print("Pilihan tidak valid, coba lagi.")
+            except ValueError:
+                print("Masukkan angka yang benar!")
+
+# Jika file ini dijalankan langsung (bukan diimpor sebagai modul), permainan dimulai
+if __name__ == "__main__":
+    # Membuat dua robot dengan atribut nama, HP, dan kekuatan serangan
+    robot1 = Robot("Atreus", 500, 50)
+    robot2 = Robot("Daedalus", 750, 40)
+    
+    # Membuat objek game dan menjalankannya
+    game = Game(robot1, robot2)
+    game.play()
